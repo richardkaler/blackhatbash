@@ -1,0 +1,4 @@
+#!/bin/bash 
+#This doesn't do much alone but if you don't know how to set your shell prompt automaticlaly when logging into a server and changing a directory, this could prove very helpful 
+
+ssh -t -i /home/username/.ssh/id_rsa username@server "bash --rcfile ~/.set-prompt -i -c 'cd /home/username/dir ; exec bash'" #this is the sister script that is required for "serverstats" to work 
