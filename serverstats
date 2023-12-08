@@ -1,0 +1,58 @@
+#!/bin/bash
+#This is filled with edits as I had to remove a lot ... Use your imagination with this one. If you were doing recon on a server, you would first need the ssh key. I like this script because it runs 
+#code on a remote server but the user doesn't have to stay logged in for very long... There is a script that goes with this and you can see that as serverssh... I will add that sister script
+
+bashsess() {
+
+       echo -e "The parent script is no longer active and all remote connections have been terminated"
+       read -r -p "Generate SSH session: Enter \"yes\" or \"no\": " bashans
+       if [[ "$bashans" == "yes" ]]; then
+          echo OK - initiating SSH session on server
+           /home/user/bin/serverssh
+       else
+          echo OK - exiting script now
+          exit 0
+       fi
+   }
+
+findscript() {
+        ssh username@host \
+       "echo \"changing directories to /home/user/dir/subdir\"
+        pushd /dir
+        {
+        date
+        echo pruning list to remove \".file\" and \".criticalfile\" files from the last two days
+        find . -mtime -2 -iname \"*.txt*\" -iname \"*.foo*\"
+        echo Now removing those files
+        find . -mtime -2 -iname  \"*.txt*\" -iname \"*.superimportant*\" -delete
+        echo Now displaying most recent files after pruning:
+        IFS= ; echo for \$PWD:
+        echo executing find script to enumerate recent files
+        findvar=\$(find .  -maxdepth 1 -exec ls -lt {} \;)
+        echo Top twenty files sorted by modification time:
+        echo =============================================
+        echo \$findvar | head -20 | grep -v \".txt\"
+        echo directories modified in the last five  days:
+        echo ============================================
+        find . -maxdepth 1 -type d -mtime -5 -printf \"%T@ %Tc %p\n\" | sort -n &&
+        echo files modified today:
+        echo ============================================
+        ls -l --time-style=+%D . | grep \$(date +%D)
+        #echo currently in \$PWD
+        echo ============================================
+        #echo Entering bash session
+        #echo you are now logged in as: \$(whoami)
+        echo current time on server: \$(date)
+        #echo press ctrl+c at any time to exit the session && bash
+    } | tee -a ./server.log
+            "
+        }
+
+        if ! [[ "$1" == "recent" ]] || [[ -z "$1" ]]; then
+    findscript "$1" | tee -a ~/downloads/server.log
+   bashsess
+    else
+ find ~/dir  -maxdepth 1 -type d -mtime -5 -printf "%T@ %Tc %p\n" | sort -n
+ echo ==============================================
+ echo Recent file stats above
+ fi
